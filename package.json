@@ -1,0 +1,62 @@
+{
+  "name": "picklink",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pick the right browser for every link on Windows",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "tsc -b && vite build",
+    "start": "electron .",
+    "dist": "npm run build && electron-builder"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
+    "electron": "latest",
+    "electron-builder": "latest",
+    "lucide-react": "latest",
+    "png-to-ico": "^3.0.2",
+    "react": "latest",
+    "react-dom": "latest",
+    "sharp": "^0.35.4",
+    "typescript": "latest",
+    "vite": "latest",
+    "wait-on": "latest"
+  },
+  "build": {
+    "appId": "app.picklink.windows",
+    "productName": "Picklink",
+    "files": [
+      "app-dist/index.html",
+      "app-dist/assets/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "compression": "maximum",
+    "electronLanguages": [
+      "en",
+      "ru",
+      "de",
+      "es",
+      "fr",
+      "it",
+      "pt-BR",
+      "zh-CN",
+      "ja"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
