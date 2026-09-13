@@ -17,7 +17,7 @@ Picklink can:
 
 ## Download
 
-Download **Picklink 1.0.1** from [GitHub Releases](https://github.com/marilynje/picklink/releases/latest).
+Download **Picklink 1.0.2** from [GitHub Releases](https://github.com/marilynje/picklink/releases/latest).
 
 Windows 10 and 11 · Settings and rules stay on your computer.
 

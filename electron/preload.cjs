@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('picklink', {
   protocolStatus: () => ipcRenderer.invoke('system:protocol-status'),
   getInitialUrl: () => ipcRenderer.invoke('app:initial-url'),
   onUrl: (callback) => ipcRenderer.on('incoming-url', (_, url) => callback(url)),
+  setPickerMode: (enabled) => ipcRenderer.invoke('window:set-picker-mode', enabled),
   minimize: () => ipcRenderer.invoke('window:minimize'),
   maximize: () => ipcRenderer.invoke('window:maximize'),
   close: () => ipcRenderer.invoke('window:close')

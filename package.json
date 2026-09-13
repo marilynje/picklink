@@ -1,6 +1,6 @@
 {
   "name": "picklink",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "Pick the right browser for every link on Windows",
   "main": "electron/main.cjs",

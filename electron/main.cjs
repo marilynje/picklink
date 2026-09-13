@@ -104,15 +104,34 @@ function loadSettings() {
 }
 
 function createWindow() {
+  const startsInPickerMode = Boolean(pendingUrl)
   const win = new BrowserWindow({
-    width: 1120, height: 760, minWidth: 900, minHeight: 620,
+    width: startsInPickerMode ? 520 : 1120, height: startsInPickerMode ? 430 : 760,
+    minWidth: startsInPickerMode ? 520 : 900, minHeight: startsInPickerMode ? 430 : 620,
     frame: false, backgroundColor: '#f7f7f8', show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false }
   })
   mainWindow = win
   const dev = process.env.NODE_ENV !== 'production' && !app.isPackaged
   dev ? win.loadURL('http://localhost:5173') : win.loadFile(path.join(__dirname, '../app-dist/index.html'))
+  if (startsInPickerMode) { win.setResizable(false); win.center() }
   win.once('ready-to-show', () => win.show())
+}
+
+function setPickerMode(win, enabled) {
+  if (!win || win.isDestroyed()) return false
+  if (enabled) {
+    win.setMinimumSize(520, 430)
+    win.setResizable(false)
+    win.setSize(520, 430)
+    win.center()
+  } else {
+    win.setResizable(true)
+    win.setMinimumSize(900, 620)
+    win.setSize(1120, 760)
+    win.center()
+  }
+  return true
 }
 
 function regAdd(key, name, value) {
@@ -153,7 +172,7 @@ function isDefaultHandler() {
 if (!app.requestSingleInstanceLock()) app.quit()
 else app.on('second-instance', (_, argv) => {
   const url = argv.find(value => /^https?:\/\//i.test(value))
-  if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.show(); mainWindow.focus(); if (url) mainWindow.webContents.send('incoming-url', url) }
+  if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); if (url) setPickerMode(mainWindow, true); mainWindow.show(); mainWindow.focus(); if (url) mainWindow.webContents.send('incoming-url', url) }
   else if (url) pendingUrl = url
 })
 
@@ -178,9 +197,11 @@ app.whenReady().then(() => {
   ipcMain.handle('app:initial-url', () => { const url = pendingUrl || null; pendingUrl = null; return url })
   ipcMain.handle('browser:open', (_, { browser, url, profile }) => new Promise(resolve => {
     if (!browser?.executable) return shell.openExternal(url).then(() => resolve(true))
-    const profileArgs = profile?.argument === '-P' ? ['-P', profile.name, '-no-remote'] : profile?.argument ? [profile.argument] : []
+    let profileArgs = profile?.argument === '-P' ? ['-P', profile.name, '-no-remote'] : profile?.argument ? [profile.argument] : []
+    if (browser.id === 'yandex' && profile?.id) profileArgs = [`--user-data-dir=${chromiumDataDir(browser)}`, `--profile-directory=${profile.id}`, '--new-window']
     execFile(browser.executable, [...profileArgs, url], error => resolve(!error))
   }))
+  ipcMain.handle('window:set-picker-mode', (e, enabled) => setPickerMode(BrowserWindow.fromWebContents(e.sender), Boolean(enabled)))
   ipcMain.handle('window:minimize', e => BrowserWindow.fromWebContents(e.sender)?.minimize())
   ipcMain.handle('window:maximize', e => { const w = BrowserWindow.fromWebContents(e.sender); w?.isMaximized() ? w.unmaximize() : w?.maximize() })
   ipcMain.handle('window:close', e => BrowserWindow.fromWebContents(e.sender)?.close())
